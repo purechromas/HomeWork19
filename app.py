@@ -6,6 +6,10 @@ from setup_db import db
 from views.directors import director_ns
 from views.genres import genre_ns
 from views.movies import movie_ns
+from views.users import user_ns
+from views.auth import auth_ns
+from dao.model.user import User
+from implemented import user_service
 
 
 def create_app(config_object):
@@ -21,10 +25,23 @@ def register_extensions(app):
     api.add_namespace(director_ns)
     api.add_namespace(genre_ns)
     api.add_namespace(movie_ns)
+    api.add_namespace(user_ns)
+    api.add_namespace(auth_ns)
 
 
 app = create_app(Config())
-app.debug = True
+
+
+u1 = User(username="Vasya", password=user_service.create_hash_password("my_little_pony"), role="user")
+u2 = User(username="Oleg", password=user_service.create_hash_password("qwerty"), role="user")
+u3 = User(username="Blagovest", password=user_service.create_hash_password("my_big_horse"), role="admin")
+
+with app.app_context():
+    db.drop_all()
+    db.create_all()
+    db.session.add_all([u1, u2, u3])
+    db.session.commit()
+
 
 if __name__ == '__main__':
-    app.run(host="localhost", port=10001, debug=True)
+    app.run()
